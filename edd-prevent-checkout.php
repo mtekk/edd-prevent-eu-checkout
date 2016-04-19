@@ -257,24 +257,19 @@ if ( ! class_exists( 'EDD_Prevent_EU_Checkout' ) ) {
 					$this_country = "ZZ";
 				}
 			} else {
-				// Otherwise we use HostIP.info which is GPL
-				try {
-					// Setting timeout limit to speed up sites
-					$context = stream_context_create(
-						array(
-					    	'http' => array(
-					    		'timeout' => 1,
-							),
-						)
-					);
+                                // Otherwise we use HostIP.info which is GPL
+                                $args = array(
+                                        'timeout' => 1,
+                                );
 
-					// Using @file... to supress errors
-					$this_country = @file_get_contents('http://api.hostip.info/country.php?ip=' . $this->eu_get_user_ip(), false, $context);
-
-				} catch (Exception $e) {
-					// If the API isn't available, set to ZZ
-					$this_country = "ZZ";
-				}
+                                $response = wp_remote_get('http://api.hostip.info/country.php?ip=' . $this->eu_get_user_ip(), $args);
+       
+                                if( $response instanceof WP_Error) {
+                                // If the API isn't available, set to ZZ
+                                        $this_country = "ZZ";
+                                } else {
+                                        $this_country = $response['body'];
+                                }
 			}
 
 			if ( is_null( $this_country ) || empty( $this_country ) ) {
